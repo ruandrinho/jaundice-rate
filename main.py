@@ -61,10 +61,9 @@ async def process_article(session, morph, charged_words, url, results, fetching_
         async with timeout(fetching_timeout):
             html = await fetch_url(session, url)
         text = inosmi_ru.sanitize(html, plaintext=True)
-        with measure_time() as t:
+        with measure_time():
             async with timeout(splitting_timeout):
                 splitted_text = await split_by_words(morph, text)
-        splitting_time = t()
         jaundice_rate = calculate_jaundice_rate(splitted_text, charged_words)
         words_count = len(splitted_text)
         status = ProcessingStatus.OK
@@ -78,8 +77,7 @@ async def process_article(session, morph, charged_words, url, results, fetching_
         'url': url,
         'status': status.value,
         'score': jaundice_rate,
-        'words_count': words_count,
-        'splitting_time': splitting_time
+        'words_count': words_count
     })
 
 
@@ -143,8 +141,6 @@ async def handle_web_request(request, morph, charged_words):
                     FETCHING_TIMEOUT,
                     SPLITTING_TIMEOUT
                 )
-    for result in results:
-        del result['splitting_time']
     return web.json_response(results)
 
 
@@ -156,8 +152,7 @@ def main():
 
     handle_web_request_partial = partial(handle_web_request, morph=morph, charged_words=charged_words)
     app = web.Application()
-    app.add_routes([web.get('/', handle_web_request_partial),
-                    web.get('/{name}', handle_web_request_partial)])
+    app.add_routes([web.get('/', handle_web_request_partial)])
     web.run_app(app)
 
 
