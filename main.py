@@ -13,7 +13,7 @@ from aiohttp import web
 from async_timeout import timeout
 
 from adapters import inosmi_ru
-from adapters.exceptions import ArticleNotFound
+from adapters.exceptions import AdapterDoesNotExist
 from text_tools import split_by_words, calculate_jaundice_rate
 
 logger = logging.getLogger(__name__)
@@ -54,10 +54,10 @@ async def fetch_url(session, url):
 
 
 async def process_article(session, morph, charged_words, url, results, fetching_timeout=5, splitting_timeout=3):
-    jaundice_rate, words_count, splitting_time = None, None, None
+    jaundice_rate, words_count, = None, None
     try:
         if 'inosmi.ru' not in url:
-            raise ArticleNotFound
+            raise AdapterDoesNotExist
         async with timeout(fetching_timeout):
             html = await fetch_url(session, url)
         text = inosmi_ru.sanitize(html, plaintext=True)
@@ -69,7 +69,7 @@ async def process_article(session, morph, charged_words, url, results, fetching_
         status = ProcessingStatus.OK
     except (aiohttp.InvalidURL, aiohttp.ClientResponseError):
         status = ProcessingStatus.FETCH_ERROR
-    except ArticleNotFound:
+    except AdapterDoesNotExist:
         status = ProcessingStatus.PARSING_ERROR
     except asyncio.exceptions.TimeoutError:
         status = ProcessingStatus.TIMEOUT
