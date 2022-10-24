@@ -16,6 +16,8 @@
 pip install -r requirements.txt
 ```
 
+Файлы со словарями «заряженных слов» находятся в папке `charged_dict`.
+
 # Как запустить
 
 ```python3
