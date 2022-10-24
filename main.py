@@ -140,8 +140,8 @@ async def handle_web_request(request, morph, charged_words):
                     charged_words,
                     url,
                     results,
-                    fetching_timeout=FETCHING_TIMEOUT,
-                    splitting_timeout=SPLITTING_TIMEOUT
+                    FETCHING_TIMEOUT,
+                    SPLITTING_TIMEOUT
                 )
     for result in results:
         del result['splitting_time']
